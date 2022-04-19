@@ -1,4 +1,8 @@
-struct State {
+struct State: Equatable {
+    static func == (lhs: State, rhs: State) -> Bool {
+        lhs.audioName == rhs.audioName && lhs.imageNames == rhs.imageNames
+    }
+    
     let audioName: String?
     let subtitle: Subtitle?
     let imageNames: [String]?

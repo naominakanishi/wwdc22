@@ -1,6 +1,6 @@
 import SpriteKit
 
-final class PresentatonScene: SKScene {
+final class PresentationScene: SKScene {
     private let stateMachine: StateMachine
     private let subtitleLabel = SKLabelNode()
     private let backgroundImage = SKSpriteNode()
@@ -36,6 +36,7 @@ final class PresentatonScene: SKScene {
         subtitleLabel.horizontalAlignmentMode = .center
         
         renderIfNeeded()
+        
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -69,11 +70,18 @@ final class PresentatonScene: SKScene {
     private func renderIfNeeded() {
         guard stateMachine.isDirty else { return }
         stateMachine.isDirty = false
+        
+        if stateMachine.currentState == .overwhelming {
+            renderOverwhelming()
+            return
+        }
+        
         if let subtitle = stateMachine.currentState.subtitle {
             render(subtitle: subtitle)
         } else {
             subtitleLabel.text = nil
         }
+        
         if let imageNames = stateMachine.currentState.imageNames {
             backgroundImage.run(.repeatForever(.animate(
                 with: imageNames.map { .init(imageNamed: $0) },
@@ -81,8 +89,26 @@ final class PresentatonScene: SKScene {
         }
     }
     
+    private func renderOverwhelming() {
+        let textures = OverwhelmingLoader().loadAll()
+        let nodes = textures.map { SKSpriteNode(texture: $0) }
+        let overwhelmedNode = SKNode()
+        
+        nodes.forEach(overwhelmedNode.addChild)
+        addChild(overwhelmedNode)
+        
+        overwhelmedNode.run(.repeatForever(.sequence([
+            .run {
+                let action: SKAction = Bool.random() ? .hide() : .hide().reversed()
+                nodes.randomElement()?.run(action)
+            },
+            .wait(forDuration: 0.01)
+        ])))
+    }
+    
     private func render(subtitle: Subtitle) {
         subtitleLabel.text = subtitle.label
+        subtitleLabel.fontColor = subtitle.color
         let margin: CGFloat = 20
         let y: CGFloat
         switch subtitle.position {

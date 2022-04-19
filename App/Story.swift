@@ -89,6 +89,39 @@ private let tappingPen: [State] = [
     )
 ]
 
+private let overwhelming: [State] = [
+    .init(
+        subtitle: .init(
+            label: "At a certain point, it wasn't about not being able to focus anymore.",
+            position: .top
+        ),
+        imageName: "overwhelming-1"
+    ),
+    .init(
+        subtitle: .init(
+            label: "It became impossible to bear with the sounds.",
+            position: .top
+        ),
+        imageName: "overwhelming-2"
+    ),
+    .init(
+        subtitle: .init(
+            label: "The lights started getting too bright.",
+            position: .top,
+            color: .white
+        ),
+        imageName: "overwhelming-3"
+    ),
+    .init(
+        subtitle: .init(
+            label: "Suddenly I was stuck with my head between my arms, unable to speak or ask for help.",
+            position: .top,
+            color: .white
+        ),
+        imageName: "overwhelming-4"
+    ),
+]
+
 private let chapters: [[State]] = [
     intro,
     context,
@@ -96,11 +129,28 @@ private let chapters: [[State]] = [
     typing,
     talking,
     tappingPen,
+    overwhelming,
+    
 ]
 
 extension StateMachine {
     var states: [State] {
-        chapters.flatMap { $0 }
-
+        chapters.flatMap { $0 } + [
+            .init(
+                subtitle: .init(
+                    label: "Suddenly I was stuck with my head between my arms, unable to speak or ask for help.",
+                    position: .top,
+                    color: .white
+                ),
+                imageName: "overwhelming-4"
+            ),
+            .overwhelming
+        ]
     }
+}
+
+extension State {
+    static let overwhelming: State = .init(
+        audioName: "nonExistant", imageName: "nonExistant"
+    )
 }

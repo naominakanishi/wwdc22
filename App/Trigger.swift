@@ -8,4 +8,5 @@ enum Trigger {
 enum Transition {
     case zoomIn(CGPoint, CGFloat, TimeInterval)
     case reset
+  
 }

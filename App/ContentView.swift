@@ -5,7 +5,7 @@ let stateMachine = StateMachine()
 
 struct ContentView: View {
     var body: some View {
-        SpriteView(scene: PresentatonScene(stateMachine: stateMachine))
+        SpriteView(scene: PresentationScene(stateMachine: stateMachine))
     }
 }
 
