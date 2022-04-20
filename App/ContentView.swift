@@ -4,15 +4,11 @@ import SpriteKit
 let stateMachine = StateMachine()
 
 struct ContentView: View {
+    let audioManager: AudioManager
     var body: some View {
-        SpriteView(scene: PresentationScene(stateMachine: stateMachine))
-    }
-}
-
-struct ContentView_Preview: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .previewInterfaceOrientation(.landscapeLeft)
-        
+        SpriteView(scene: PresentationScene(
+            stateMachine: stateMachine,
+            audioManager: audioManager
+        ))
     }
 }

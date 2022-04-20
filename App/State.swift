@@ -1,36 +1,46 @@
 struct State: Equatable {
     static func == (lhs: State, rhs: State) -> Bool {
-        lhs.audioName == rhs.audioName && lhs.imageNames == rhs.imageNames
+        lhs.audios?.map { $0.fileName } == rhs.audios?.map { $0.fileName } && lhs.imageNames == rhs.imageNames
     }
     
-    let audioName: String?
+    let audios: [Audio]?
     let subtitle: Subtitle?
     let imageNames: [String]?
     let transition: Transition?
     
-    init (label: String, position: Subtitle.Position) {
-        self.init(audioName: nil, subtitle: .init(
+    init(audio: Audio? = nil,
+        label: String,
+        position: Subtitle.Position) {
+        self.init(audio: audio, subtitle: .init(
             label: label, position: position),
-                  imageName: nil)
+                  imageNames: nil)
     }
     
-    init(audioName: String? = nil,
+    init(audio: Audio? = nil,
          subtitle: Subtitle? = nil,
          imageNames: [String]? = nil,
          transition: Transition? = nil
     ) {
-        self.audioName = audioName
+        if let audio = audio {
+            self.audios = [audio]
+        } else {
+            self.audios = nil
+        }
         self.subtitle = subtitle
         self.transition = transition
         self.imageNames = imageNames
     }
     
-    init(audioName: String? = nil,
+    init(audio: Audio? = nil,
          subtitle: Subtitle? = nil,
          imageName: String? = nil,
          transition: Transition? = nil
     ) {
-        self.audioName = audioName
+        if let audio = audio {
+            self.audios = [audio]
+        } else {
+            self.audios = nil
+        }
         self.subtitle = subtitle
         self.transition = transition
         if let imageName = imageName {
@@ -38,5 +48,29 @@ struct State: Equatable {
         } else {
             self.imageNames = nil
         }
+    }
+    init(audios: [Audio]? = nil,
+         subtitle: Subtitle? = nil,
+         imageName: String? = nil,
+         transition: Transition? = nil
+    ) {
+        self.audios = audios
+        self.subtitle = subtitle
+        self.transition = transition
+        if let imageName = imageName {
+            self.imageNames = [imageName]
+        } else {
+            self.imageNames = nil
+        }
+    }
+    init(audios: [Audio]? = nil,
+         subtitle: Subtitle? = nil,
+         imageNames: [String]? = nil,
+         transition: Transition? = nil
+    ) {
+        self.audios = audios
+        self.subtitle = subtitle
+        self.transition = transition
+        self.imageNames = imageNames
     }
 }

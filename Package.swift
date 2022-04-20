@@ -16,7 +16,7 @@ let package = Package(
         .iOSApplication(
             name: "MyTemplate",
             targets: ["App"],
-            teamIdentifier: "ZAZRKU3BQ9",
+            teamIdentifier: "UL74FQ825B",
             displayVersion: "1.0",
             bundleVersion: "1",
             iconAssetName: "AppIcon",
@@ -25,14 +25,17 @@ let package = Package(
             ],
             supportedInterfaceOrientations: [
                 .landscapeRight,
-                .landscapeLeft,
+                .landscapeLeft
             ]
         )
     ],
     targets: [
         .executableTarget(
             name: "App",
-            path: "App"
+            path: "App",
+            resources: [
+                .process("audios")
+            ]
         )
     ]
 )

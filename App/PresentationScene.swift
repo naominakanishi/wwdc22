@@ -5,9 +5,14 @@ final class PresentationScene: SKScene {
     private let subtitleLabel = SKLabelNode()
     private let backgroundImage = SKSpriteNode()
     private let cameraNode = SKCameraNode()
+    private let audioManager: AudioManager
     
-    init(stateMachine: StateMachine) {
+    let overwhelmedNode = SKNode()
+    
+    init(stateMachine: StateMachine,
+         audioManager: AudioManager) {
         self.stateMachine = stateMachine
+        self.audioManager = audioManager
         super.init(size: UIScreen.main.bounds.size)
     }
     
@@ -16,7 +21,25 @@ final class PresentationScene: SKScene {
     }
     
     override func didMove(to view: SKView) {
+        print ("moved")
+        view.frame.size = UIScreen.main.bounds.size
+        view.contentMode = .scaleAspectFit
+        scaleMode = .resizeFill
+        backgroundImage.size = view.frame.size
         super.didMove(to: view)
+        view.ignoresSiblingOrder = true
+        
+        audioManager.onSoundFinished = { [weak self] in
+            self?.fire(trigger: .voice)
+        }
+    
+        let textures = OverwhelmingLoader().loadAll()
+        let nodes = textures.map { SKSpriteNode(texture: $0) }
+        
+        nodes.forEach(overwhelmedNode.addChild)
+        addChild(overwhelmedNode)
+        overwhelmedNode.isHidden = true
+        
         
         anchorPoint = .init(x: 0.5, y: 0.5)
         backgroundColor = .gray
@@ -35,18 +58,28 @@ final class PresentationScene: SKScene {
         subtitleLabel.preferredMaxLayoutWidth = frame.width * 0.9
         subtitleLabel.horizontalAlignmentMode = .center
         
-        renderIfNeeded()
         
+        overwhelmedNode.zPosition = 1000
+        
+        DispatchQueue.main.async {
+            
+            self.renderIfNeeded()
+        }
+        
+        view.layoutIfNeeded()
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
-            
-            print(location)
-            let transition = stateMachine.handle(trigger: .touch(location))
-            handle(transition: transition)
+            fire(trigger: .touch(location))
         }
+    }
+    
+    private func fire(trigger: Trigger) {
+        print("FIRED", trigger)
+        let transition = stateMachine.handle(trigger: trigger)
+        handle(transition: transition)
     }
     
     private func handle(transition: Transition?) {
@@ -70,7 +103,7 @@ final class PresentationScene: SKScene {
     private func renderIfNeeded() {
         guard stateMachine.isDirty else { return }
         stateMachine.isDirty = false
-        
+        print ("rendering")
         if stateMachine.currentState == .overwhelming {
             renderOverwhelming()
             return
@@ -82,6 +115,10 @@ final class PresentationScene: SKScene {
             subtitleLabel.text = nil
         }
         
+        if let audio = stateMachine.currentState.audios {
+            render(audio: audio)
+        }
+        
         if let imageNames = stateMachine.currentState.imageNames {
             backgroundImage.run(.repeatForever(.animate(
                 with: imageNames.map { .init(imageNamed: $0) },
@@ -90,20 +127,19 @@ final class PresentationScene: SKScene {
     }
     
     private func renderOverwhelming() {
-        let textures = OverwhelmingLoader().loadAll()
-        let nodes = textures.map { SKSpriteNode(texture: $0) }
-        let overwhelmedNode = SKNode()
-        
-        nodes.forEach(overwhelmedNode.addChild)
-        addChild(overwhelmedNode)
-        
+        overwhelmedNode.isHidden = false
         overwhelmedNode.run(.repeatForever(.sequence([
             .run {
                 let action: SKAction = Bool.random() ? .hide() : .hide().reversed()
-                nodes.randomElement()?.run(action)
+                self.overwhelmedNode.children.randomElement()?.run(action)
             },
             .wait(forDuration: 0.01)
         ])))
+        audioManager.play(audios: [
+            Audio(fileName: "talking-6sec", repeatsForever: true, volume: 4.0),
+            Audio(fileName: "tapping-6sec", repeatsForever: true, volume: 4.0),
+            Audio(fileName: "typing-sound-2", repeatsForever: true, volume: 4.0)
+        ])
     }
     
     private func render(subtitle: Subtitle) {
@@ -120,6 +156,10 @@ final class PresentationScene: SKScene {
             y = frame.maxY - subtitleLabel.frame.height - margin
         }
         subtitleLabel.position = .init(x: .zero, y: y)
+    }
+    
+    private func render(audio: [Audio]) {
+        audioManager.play(audios: audio)
     }
     
     private func zoom(at position: CGPoint, scale: CGFloat, duration: TimeInterval, then run: @escaping () -> Void) {
